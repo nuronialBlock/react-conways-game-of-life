@@ -44,10 +44,25 @@ const GenerateBoard = (props) => {
   }
 
   const grid = row();
-
+  let style, btnInfo;
+  if(props.playBtn) {
+    style = "success";
+    btnInfo = "Play";
+  } else {
+    style = "danger";
+    btnInfo = "Cancel";
+  }
   return (
     <div>
       <Panel header='The GAME is on'>
+        <Button
+          onClick={ props.onPlayBtn }
+          bsStyle={ style }
+        >
+          { btnInfo }
+        </Button>
+        <hr/>
+        <br/>
         { grid }
       </Panel>
     </div>
@@ -60,7 +75,9 @@ export default class Board extends Component {
 
     this.state = {
       board: [],
+      playBtn: true
     };
+    this.togglePlayBtn = this.togglePlayBtn.bind(this);
     this.toggleColor = this.toggleColor.bind(this);
   }
 
@@ -83,16 +100,24 @@ export default class Board extends Component {
     });
   }
 
+  togglePlayBtn() {
+    this.setState({
+      playBtn : !this.state.playBtn
+    })
+  }
+
   render() {
     return (
       <Grid>
         <Row>
           <Col lg={2}></Col>
-          <Col lg={10}>
+          <Col lg={9}>
             <GenerateBoard
               n={20}
               m={30}
               board={ this.state.board }
+              playBtn={ this.state.playBtn }
+              onPlayBtn={ this.togglePlayBtn }
               onBtnClick={ this.toggleColor }
             />
           </Col>
