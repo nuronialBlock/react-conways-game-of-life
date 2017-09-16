@@ -8,20 +8,23 @@ import {
 } from 'react-bootstrap';
 
 const GenerateBoard = (props) => {
-  const column = (st, board) => {
+  const board = props.board;
+  const column = (x) => {
+    let y = -1;
     const ara = Array(props.m).fill(0).map(() => {
-      st = st + 1;
-      let i = parseInt(st / 30);
-      let j = st % 30;
+      y = y + 1;
+
       let colorType="default";
-      if(board[i][j]) {
+      if(board[x][y]) {
         colorType="primary";
       }
+
       return (
         <Button
           bsStyle={ colorType }
           onClick={ props.onBtnClick }
-          id={ (st - 1).toString() }
+          data-i={ x.toString() }
+          data-j={ y.toString() }
         >
         </Button>
       );
@@ -30,17 +33,17 @@ const GenerateBoard = (props) => {
     return ara;
   }
 
-  const row = (board) => {
-    let st = 0;
+  const row = () => {
+    let x = 0;
     const ara = Array(props.n).fill(0).map(() => {
-      const val = column(st, board);
-      st = st + props.m;
+      const val = column(x);
+      x = x + 1;
       return val;
     });
     return ara;
   }
 
-  const grid = row(props.board);
+  const grid = row();
 
   return (
     <div>
@@ -61,22 +64,20 @@ export default class Board extends Component {
     this.toggleColor = this.toggleColor.bind(this);
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     let initValue = () => Array(20).fill(0).map(() =>
       Array(30).fill(false));
     let board = initValue();
-    console.log(board);
-    this.setState({ board });
-    // console.log("here ::::" , this.state.board);
+    await this.setState({ board });
   }
 
   toggleColor(e) {
-    let id = parseInt(e.target.id);
-    let i = parseInt(id / 30);
-    let j = id % 30;
+    let i = parseInt(e.target.getAttribute("data-i"));
+    let j = parseInt(e.target.getAttribute("data-j"));
 
     let board = this.state.board;
     board[i][j] = !this.state.board[i][j];
+    console.log(board[i][j]);
     this.setState({
       board
     });
