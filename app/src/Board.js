@@ -7,7 +7,7 @@ import {
   Panel
 } from 'react-bootstrap';
 
-const GenerateBoard = (props) => {
+const GameBoard = (props) => {
   const board = props.board;
   const column = (x) => {
     let y = -1;
@@ -67,6 +67,21 @@ const GenerateBoard = (props) => {
       </Panel>
     </div>
   );
+}
+
+const GenerateBoard = (props) => {
+  if(props.playBtn) {
+    return (
+      <GameBoard
+        n={ props.n }
+        m={ props.m }
+        board={ props.board }
+        playBtn={ props.playBtn }
+        onPlayBtn={ props.onPlayBtn }
+        onBtnClick={ props.onBtnClick }
+      />
+    );
+  }
 }
 
 export default class Board extends Component {
