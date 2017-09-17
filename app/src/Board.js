@@ -45,13 +45,138 @@ const GameBoard = (props) => {
 
   const grid = row();
   let style, btnInfo;
-  if(props.playBtn) {
-    style = "success";
-    btnInfo = "Play";
-  } else {
-    style = "danger";
-    btnInfo = "Cancel";
+  style = "success";
+  btnInfo = "Play";
+  return (
+    <div>
+      <Panel header='The GAME is on'>
+        <Button
+          onClick={ props.onPlayBtn }
+          bsStyle={ style }
+        >
+          { btnInfo }
+        </Button>
+        <hr/>
+        <br/>
+        { grid }
+      </Panel>
+    </div>
+  );
+}
+
+// const checkAliveNeighbor = (board, ii, jj, n, m) => {
+//   let x = [-1, -1, -1, 0, 0, 1, 1, 1];
+//   let y = [-1, 0, 1, -1, 1, -1, 0, 1];
+//   let count = 0;
+//   for (var i = 0; i < x.length; i++) {
+//     let xx = x[i] + ii;
+//     let yy = y[i] + jj;
+//     if((xx >= 0 && xx < n) && (yy >= 0 && yy < m)) {
+//       if(board[xx][yy]) {
+//         count = count + 1;
+//       }
+//     }
+//   }
+//   return count;
+// }
+// const algorithm = (curBoard, n, m) => {
+//   let i = 0;
+//   let nextBoard = curBoard.map(board => {
+//     i = i + 1;
+//     let j = 0;
+//     return board.map(board => {
+//       j = j + 1;
+//       let alive = checkAliveNeighbor(curBoard, i-1, j-1, n, m);
+//       if(board) {
+//         if(alive < 2) return false;
+//         if(alive > 3) return false;
+//         return true;
+//       } else {
+//         alive === 3 ? true : false;
+//       }
+//     })
+//   })
+//   return nextBoard;
+// }
+
+const GamePlay = (props) => {
+  console.log("heres...");
+  const board = props.board;
+  let nextBoard = props.board;
+  const checkAliveNeighbor = (ii, jj) => {
+    let x = [-1, -1, -1, 0, 0, 1, 1, 1];
+    let y = [-1, 0, 1, -1, 1, -1, 0, 1];
+    let count = 0;
+    for (var i = 0; i < x.length; i++) {
+      let xx = x[i] + ii;
+      let yy = y[i] + jj;
+      if((xx >= 0 && xx < props.n) && (yy >= 0 && yy < props.m)) {
+        if(board[xx][yy]) {
+          count = count + 1;
+        }
+      }
+    }
+    return count;
   }
+  const algorithm = () => {
+    let i = 0;
+    nextBoard = board.map(board => {
+      i = i + 1;
+      let j = 0;
+      let val = board.map(board => {
+        j = j + 1;
+        let alive = checkAliveNeighbor(i-1, j-1);
+        if(board) {
+          if(alive < 2) return false;
+          if(alive > 3) return false;
+          return true;
+        } else {
+          alive === 3 ? true : false;
+        }
+      });
+      return val;
+    })
+  }
+
+  const column = (x) => {
+    let y = -1;
+    const ara = Array(props.m).fill(0).map(() => {
+      y = y + 1;
+      let colorType="default";
+      if(board[x][y]) {
+        colorType="primary";
+      }
+      return (
+        <Button
+          bsStyle={ colorType }
+        >
+        </Button>
+      );
+    });
+    ara.push(<br/>);
+    return ara;
+  }
+
+  const row = () => {
+    let x = 0;
+    const ara = Array(props.n).fill(0).map(() => {
+      const val = column(x);
+      x = x + 1;
+      return val;
+    });
+    return ara;
+  }
+
+  const updateData = () => {
+    props.handleUpdateGrid(nextBoard);
+  }
+
+  algorithm();
+  updateData();
+  const grid = row();
+  let style, btnInfo;
+  style = "danger";
+  btnInfo = "Cancel";
   return (
     <div>
       <Panel header='The GAME is on'>
@@ -81,6 +206,18 @@ const GenerateBoard = (props) => {
         onBtnClick={ props.onBtnClick }
       />
     );
+  } else {
+    return(
+      <GamePlay
+        n={ props.n }
+        m={ props.m }
+        board={ props.board }
+        playBtn={ props.playBtn }
+        onPlayBtn={ props.onPlayBtn }
+        onBtnClick={ props.onBtnClick }
+        handleUpdateGrid={ props.handleUpdateGrid }
+      />
+    );
   }
 }
 
@@ -92,6 +229,7 @@ export default class Board extends Component {
       board: [],
       playBtn: true
     };
+    this.updateGrid = this.updateGrid.bind(this);
     this.togglePlayBtn = this.togglePlayBtn.bind(this);
     this.toggleColor = this.toggleColor.bind(this);
   }
@@ -115,6 +253,10 @@ export default class Board extends Component {
     });
   }
 
+  updateGrid(board){
+    this.setState({ board });
+  }
+
   togglePlayBtn() {
     this.setState({
       playBtn : !this.state.playBtn
@@ -134,6 +276,7 @@ export default class Board extends Component {
               playBtn={ this.state.playBtn }
               onPlayBtn={ this.togglePlayBtn }
               onBtnClick={ this.toggleColor }
+              handleUpdateGrid={ this.updateGrid }
             />
           </Col>
         </Row>
