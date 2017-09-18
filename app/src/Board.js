@@ -4,6 +4,7 @@ import {
   Row,
   Col,
   Button,
+  ButtonToolbar,
   Panel
 } from 'react-bootstrap';
 
@@ -137,12 +138,20 @@ const GamePlay = (props) => {
   return (
     <div>
       <Panel header={ `Generations: ${ props.generations }` }>
-        <Button
-          onClick={ props.onPlayBtn }
-          bsStyle={ style }
-        >
-          { btnInfo }
-        </Button>
+        <ButtonToolbar>
+          <Button
+            onClick={ props.onPlayBtn }
+            bsStyle={ style }
+          >
+            { btnInfo }
+          </Button>
+          <Button
+            onClick={ props.onPause }
+            bsStyle={ "info" }
+          >
+            { "Pasue" }
+          </Button>
+        </ButtonToolbar>
         <hr/>
         <br/>
         { grid }
@@ -160,6 +169,7 @@ const GenerateBoard = (props) => {
         board={ props.board }
         playBtn={ props.playBtn }
         onPlayBtn={ props.onPlayBtn }
+        onPause={ this.handlePause }
         onBtnClick={ props.onBtnClick }
       />
     );
@@ -169,10 +179,12 @@ const GenerateBoard = (props) => {
         n={ props.n }
         m={ props.m }
         board={ props.board }
+        pause={ props.pause }
         generations= { props.generations }
         playBtn={ props.playBtn }
         onPlayBtn={ props.onPlayBtn }
         onBtnClick={ props.onBtnClick }
+        onPause={ props.onPause }
       />
     );
   }
@@ -183,11 +195,13 @@ export default class Board extends Component {
     super(props);
 
     this.state = {
+      pause: true,
       generations: 0,
       intervalID: "",
       board: [],
       playBtn: true
     };
+    this.handlePause = this.handlePause.bind(this);
     this.initBoard = this.initBoard.bind(this);
     this.updateGrid = this.updateGrid.bind(this);
     this.togglePlayBtn = this.togglePlayBtn.bind(this);
@@ -229,7 +243,8 @@ export default class Board extends Component {
     if(this.state.playBtn) {
       let intervalID = setInterval(this.updateGrid, 100);
       this.setState({
-        intervalID
+        intervalID,
+        pause: !this.state.pause
       });
     } else {
       clearInterval(this.state.intervalID);
@@ -245,6 +260,14 @@ export default class Board extends Component {
     })
   }
 
+  handlePause() {
+    clearInterval(this.state.intervalID);
+    this.setState({
+      playBtn: !this.state.playBtn,
+      pause: !this.state.pause
+    })
+  }
+
   render() {
     return (
       <Grid>
@@ -256,9 +279,11 @@ export default class Board extends Component {
               m={30}
               board={ this.state.board }
               playBtn={ this.state.playBtn }
+              pause={ this.state.pause }
               generations={ this.state.generations }
               onPlayBtn={ this.togglePlayBtn }
               onBtnClick={ this.toggleColor }
+              onPause={ this.handlePause }
             />
           </Col>
         </Row>
