@@ -136,7 +136,7 @@ const GamePlay = (props) => {
   btnInfo = "Cancel";
   return (
     <div>
-      <Panel header='The GAME is on'>
+      <Panel header={ `Generations: ${ props.generations }` }>
         <Button
           onClick={ props.onPlayBtn }
           bsStyle={ style }
@@ -169,6 +169,7 @@ const GenerateBoard = (props) => {
         n={ props.n }
         m={ props.m }
         board={ props.board }
+        generations= { props.generations }
         playBtn={ props.playBtn }
         onPlayBtn={ props.onPlayBtn }
         onBtnClick={ props.onBtnClick }
@@ -182,19 +183,25 @@ export default class Board extends Component {
     super(props);
 
     this.state = {
+      generations: 0,
       intervalID: "",
       board: [],
       playBtn: true
     };
+    this.initBoard = this.initBoard.bind(this);
     this.updateGrid = this.updateGrid.bind(this);
     this.togglePlayBtn = this.togglePlayBtn.bind(this);
     this.toggleColor = this.toggleColor.bind(this);
   }
 
-  componentWillMount() {
+  initBoard() {
     let initValue = () => Array(20).fill(0).map(() =>
       Array(30).fill(false));
-    let board = initValue();
+    return initValue();
+  }
+
+  componentWillMount() {
+    let board = this.initBoard();
     this.setState({ board });
   }
 
@@ -211,15 +218,27 @@ export default class Board extends Component {
 
   updateGrid(){
     let board = algorithm(this.state.board, 20, 30);
-    this.setState({ board });
+    let generations = this.state.generations + 1;
+    this.setState({
+      board,
+      generations
+    });
   }
 
   togglePlayBtn() {
     if(this.state.playBtn) {
       let intervalID = setInterval(this.updateGrid, 100);
-      this.setState({ intervalID });
+      this.setState({
+        intervalID
+      });
     } else {
       clearInterval(this.state.intervalID);
+      let generations = 0;
+      let board = this.initBoard();
+      this.setState({
+        generations,
+        board
+      });
     }
     this.setState({
       playBtn : !this.state.playBtn
@@ -237,6 +256,7 @@ export default class Board extends Component {
               m={30}
               board={ this.state.board }
               playBtn={ this.state.playBtn }
+              generations={ this.state.generations }
               onPlayBtn={ this.togglePlayBtn }
               onBtnClick={ this.toggleColor }
             />
