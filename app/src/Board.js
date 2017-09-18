@@ -64,80 +64,43 @@ const GameBoard = (props) => {
   );
 }
 
-// const checkAliveNeighbor = (board, ii, jj, n, m) => {
-//   let x = [-1, -1, -1, 0, 0, 1, 1, 1];
-//   let y = [-1, 0, 1, -1, 1, -1, 0, 1];
-//   let count = 0;
-//   for (var i = 0; i < x.length; i++) {
-//     let xx = x[i] + ii;
-//     let yy = y[i] + jj;
-//     if((xx >= 0 && xx < n) && (yy >= 0 && yy < m)) {
-//       if(board[xx][yy]) {
-//         count = count + 1;
-//       }
-//     }
-//   }
-//   return count;
-// }
-// const algorithm = (curBoard, n, m) => {
-//   let i = 0;
-//   let nextBoard = curBoard.map(board => {
-//     i = i + 1;
-//     let j = 0;
-//     return board.map(board => {
-//       j = j + 1;
-//       let alive = checkAliveNeighbor(curBoard, i-1, j-1, n, m);
-//       if(board) {
-//         if(alive < 2) return false;
-//         if(alive > 3) return false;
-//         return true;
-//       } else {
-//         alive === 3 ? true : false;
-//       }
-//     })
-//   })
-//   return nextBoard;
-// }
-
-const GamePlay = (props) => {
-  console.log("heres...");
-  const board = props.board;
-  let nextBoard = props.board;
-  const checkAliveNeighbor = (ii, jj) => {
-    let x = [-1, -1, -1, 0, 0, 1, 1, 1];
-    let y = [-1, 0, 1, -1, 1, -1, 0, 1];
-    let count = 0;
-    for (var i = 0; i < x.length; i++) {
-      let xx = x[i] + ii;
-      let yy = y[i] + jj;
-      if((xx >= 0 && xx < props.n) && (yy >= 0 && yy < props.m)) {
-        if(board[xx][yy]) {
-          count = count + 1;
-        }
+const checkAliveNeighbor = (board, ii, jj, n, m) => {
+  let x = [-1, -1, -1, 0, 0, 1, 1, 1];
+  let y = [-1, 0, 1, -1, 1, -1, 0, 1];
+  let count = 0;
+  for (var i = 0; i < x.length; i++) {
+    let xx = x[i] + ii;
+    let yy = y[i] + jj;
+    if((xx >= 0 && xx < n) && (yy >= 0 && yy < m)) {
+      if(board[xx][yy]) {
+        count = count + 1;
       }
     }
-    return count;
   }
-  const algorithm = () => {
-    let i = 0;
-    nextBoard = board.map(board => {
-      i = i + 1;
-      let j = 0;
-      let val = board.map(board => {
-        j = j + 1;
-        let alive = checkAliveNeighbor(i-1, j-1);
-        if(board) {
-          if(alive < 2) return false;
-          if(alive > 3) return false;
-          return true;
-        } else {
-          alive === 3 ? true : false;
-        }
-      });
-      return val;
+  return count;
+}
+const algorithm = (curBoard, n, m) => {
+  let i = 0;
+  let nextBoard = curBoard.map(board => {
+    i = i + 1;
+    let j = 0;
+    return board.map(board => {
+      j = j + 1;
+      let alive = checkAliveNeighbor(curBoard, i-1, j-1, n, m);
+      if(board) {
+        if(alive < 2) return false;
+        if(alive > 3) return false;
+        return true;
+      } else {
+        alive === 3 ? true : false;
+      }
     })
-  }
+  })
+  return nextBoard;
+}
 
+const GamePlay = (props) => {
+  const board = props.board;
   const column = (x) => {
     let y = -1;
     const ara = Array(props.m).fill(0).map(() => {
@@ -167,12 +130,6 @@ const GamePlay = (props) => {
     return ara;
   }
 
-  const updateData = () => {
-    props.handleUpdateGrid(nextBoard);
-  }
-
-  algorithm();
-  updateData();
   const grid = row();
   let style, btnInfo;
   style = "danger";
@@ -215,7 +172,6 @@ const GenerateBoard = (props) => {
         playBtn={ props.playBtn }
         onPlayBtn={ props.onPlayBtn }
         onBtnClick={ props.onBtnClick }
-        handleUpdateGrid={ props.handleUpdateGrid }
       />
     );
   }
@@ -226,6 +182,7 @@ export default class Board extends Component {
     super(props);
 
     this.state = {
+      intervalID: "",
       board: [],
       playBtn: true
     };
@@ -234,11 +191,11 @@ export default class Board extends Component {
     this.toggleColor = this.toggleColor.bind(this);
   }
 
-  async componentWillMount() {
+  componentWillMount() {
     let initValue = () => Array(20).fill(0).map(() =>
       Array(30).fill(false));
     let board = initValue();
-    await this.setState({ board });
+    this.setState({ board });
   }
 
   toggleColor(e) {
@@ -247,17 +204,23 @@ export default class Board extends Component {
 
     let board = this.state.board;
     board[i][j] = !this.state.board[i][j];
-    console.log(board[i][j]);
     this.setState({
       board
     });
   }
 
-  updateGrid(board){
+  updateGrid(){
+    let board = algorithm(this.state.board, 20, 30);
     this.setState({ board });
   }
 
   togglePlayBtn() {
+    if(this.state.playBtn) {
+      let intervalID = setInterval(this.updateGrid, 100);
+      this.setState({ intervalID });
+    } else {
+      clearInterval(this.state.intervalID);
+    }
     this.setState({
       playBtn : !this.state.playBtn
     })
@@ -276,7 +239,6 @@ export default class Board extends Component {
               playBtn={ this.state.playBtn }
               onPlayBtn={ this.togglePlayBtn }
               onBtnClick={ this.toggleColor }
-              handleUpdateGrid={ this.updateGrid }
             />
           </Col>
         </Row>
